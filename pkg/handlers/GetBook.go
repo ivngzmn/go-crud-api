@@ -2,27 +2,27 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/tutorials/go/crud/pkg/mocks"
+	"github.com/tutorials/go/crud/pkg/models"
 )
 
-func GetBook(w http.ResponseWriter, r *http.Request) {
+func (h handler) GetBook(w http.ResponseWriter, r *http.Request) {
 	// read dynamic id parameter
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
-	// iterate over all the mock books
-	for _, book := range mocks.Books {
-		if book.Id == id {
-			// if ids are equal send book as response
-			w.WriteHeader(http.StatusOK)
-			w.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(book)
-			break
-		}
+	// find book by Id
+	var book models.Book
+	
+	if result := h.DB.First(&book, id); result.Error != nil {
+		fmt.Println(result.Error)
 	}
-
+	
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&book)
 }
